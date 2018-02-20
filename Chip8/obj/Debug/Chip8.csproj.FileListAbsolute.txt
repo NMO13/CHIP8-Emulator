@@ -1,0 +1,9 @@
+C:\Users\Martin\Desktop\Chip8\Chip8\bin\Debug\Chip8.exe.config
+C:\Users\Martin\Desktop\Chip8\Chip8\bin\Debug\Chip8.exe
+C:\Users\Martin\Desktop\Chip8\Chip8\bin\Debug\Chip8.pdb
+C:\Users\Martin\Desktop\Chip8\Chip8\obj\Debug\Chip8.csprojResolveAssemblyReference.cache
+C:\Users\Martin\Desktop\Chip8\Chip8\obj\Debug\Chip8.MainForm.resources
+C:\Users\Martin\Desktop\Chip8\Chip8\obj\Debug\Chip8.Properties.Resources.resources
+C:\Users\Martin\Desktop\Chip8\Chip8\obj\Debug\Chip8.csproj.GenerateResource.Cache
+C:\Users\Martin\Desktop\Chip8\Chip8\obj\Debug\Chip8.exe
+C:\Users\Martin\Desktop\Chip8\Chip8\obj\Debug\Chip8.pdb
