@@ -10,15 +10,15 @@ namespace Chip8
     {
         private ushort opcode;
         private byte[] memory = new byte[4096];
-        private sbyte[] registers = new sbyte[16];
+        private byte[] registers = new byte[16];
 
         private ushort pc;
         private ushort I;
-        private sbyte[] V = new sbyte[16];
+        private byte[] V = new byte[16];
 
-        private sbyte[] gfx = new sbyte[64 * 32];
-        private sbyte delay_timer;
-        private sbyte sound_timer;
+        private byte[] gfx = new byte[64 * 32];
+        private byte delay_timer;
+        private byte sound_timer;
 
         private ushort[] stack = new ushort[16];
         private ushort sp;
@@ -27,7 +27,7 @@ namespace Chip8
 
         private byte[] keyArr = new byte[16];
 
-        public delegate void DrawGraphics(sbyte[] gfx);
+        public delegate void DrawGraphics(byte[] gfx);
         public event DrawGraphics DrawGraphicsEvent;
 
         public bool Stop = false;
@@ -83,40 +83,70 @@ namespace Chip8
             // Decode opcode
             switch (opcode & 0xF000)
             {
-                // Some opcodes //
-                case 0xA000: 
-                    I = (ushort) (opcode & 0x0FFF);
-                    pc += 2;
-                    break;
                 case 0x0000:
                     switch (opcode & 0x000F)
                     {
                         case 0x0000: // 0x00E0: Clears the screen        
+                            for (int i = 0; i < 2048; ++i)
+                                gfx[i] = 0x0;
+                            drawFlag = true;
+                            pc += 2;
                             break;
-                        case 0x000E: // 0x00EE: Returns from subroutine          
+                        case 0x000E: // 0x00EE: Returns from subroutine
+                            pc = stack[--sp];
+                            pc += 2;
                             break;
                         default:
-                            Console.WriteLine("Unknown opcode [0x0000]: 0x%X\n", opcode);
+                            Console.WriteLine("Unknown opcode [0x0000]: {0:x}\n", opcode);
                             break;
                     }
+                    break;
+                case 0x1000:
+                    pc = (byte) (opcode & 0x0FFF);
                     break;
                 case 0x2000:
                     stack[sp] = pc;
                     ++sp;
                     pc = (ushort) (opcode & 0x0FFF);
                     break;
-                case 0x0004:
-                    if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))
-                        V[0xF] = 1; //carry
+                case 0x3000:
+                    if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))
+                        pc += 4;
                     else
-                        V[0xF] = 0;
-                    V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
+                        pc += 2;
+                    break;
+                case 0x6000:
+                    V[(opcode & 0x0F00) >> 8] = (byte) (opcode & 0x00FF);
                     pc += 2;
                     break;
-                case 0x0033:
-                    memory[I] = (byte) (V[(opcode & 0x0F00) >> 8] / 100);
-                    memory[I + 1] = (byte) ((V[(opcode & 0x0F00) >> 8] / 10) % 10);
-                    memory[I + 2] = (byte) ((V[(opcode & 0x0F00) >> 8] % 100) % 10);
+                case 0x7000:
+                    V[(opcode & 0x0F00) >> 8] += (byte)(opcode & 0x00FF);
+                    pc += 2;
+                    break;
+                case 0x8000:
+                    {
+                        switch(opcode & 0x000F)
+                        {
+                            case 0x0000:
+                                V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
+                                pc += 2;
+                                break;
+                            case 0x0004:
+                                if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))
+                                    V[0xF] = 1; //carry
+                                else
+                                    V[0xF] = 0;
+                                V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
+                                pc += 2;
+                                break;
+                            default:
+                                Console.WriteLine("Unknown opcode [0x0000]: {0:x}\n", opcode);
+                                break;
+                        }
+                        break;
+                    }
+                case 0xA000:
+                    I = (ushort)(opcode & 0x0FFF);
                     pc += 2;
                     break;
                 case 0xD000:
@@ -132,10 +162,10 @@ namespace Chip8
                             pixel = memory[I + yline];
                             for (int xline = 0; xline < 8; xline++)
                             {
-                                if ((pixel & (0x80 >> xline)) != 0)
+                                if ((pixel & (0x80 >> xline)) != 0) // if sprite pixel is set
                                 {
-                                    if (gfx[(x + xline + ((y + yline) * 64))] == 1)
-                                        V[0xF] = 1;
+                                    if (gfx[(x + xline + ((y + yline) * 64))] == 1) // if pixel value changes from set to unset
+                                        V[0xF] = 1; // set vf register
                                     gfx[x + xline + ((y + yline) * 64)] ^= 1;
                                 }
                             }
@@ -158,8 +188,42 @@ namespace Chip8
                             break;
                     }
                     break;
+                case 0xF000:
+                    switch (opcode & 0x00FF)
+                    {
+                        case 0x0007:
+                            V[(opcode & 0x0F00) >> 8] = delay_timer;
+                            pc += 2;
+                            break;
+                        case 0x0015:
+                            delay_timer = V[(opcode & 0x0F00) >> 8];
+                            pc += 2;
+                            break;
+                        case 0x0033:
+                            memory[I] = (byte) (V[(opcode & 0x0F00) >> 8] / 100);
+                            memory[I + 1] = (byte) ((V[(opcode & 0x0F00) >> 8] / 10) % 10);
+                            memory[I + 2] = (byte) ((V[(opcode & 0x0F00) >> 8] % 100) % 10);
+                            pc += 2;
+                            break;
+                        case 0x0029:
+                            I = (byte) (V[(opcode & 0x0F00) >> 8] * 0x5);
+                            pc += 2;
+                            break;
+                        case 0x0065:
+                            byte length = (byte)((opcode & 0x0F00) >> 8);
+                            for(byte i = 0; i <= length; i++)
+                            {
+                                V[i] = memory[I++];
+                            }
+                            pc += 2;
+                            break;
+                        default:
+                            Console.WriteLine("Unknown opcode: {0:x}\n", opcode);
+                            break;
+                    }
+                    break;
                 default:
-                    Console.WriteLine("Unknown opcode: 0x%X\n", opcode);
+                    Console.WriteLine("Unknown opcode: {0:x}\n", opcode);
                     break;
             }
 
@@ -170,7 +234,7 @@ namespace Chip8
             if (sound_timer > 0)
             {
                 if (sound_timer == 1)
-                    Console.WriteLine("BEEP!\n");
+                    Console.WriteLine("BEEP!\n"); //TODO
                 --sound_timer;
             }
         }
@@ -184,6 +248,7 @@ namespace Chip8
                 if(drawFlag)
                 {
                     DrawGraphicsEvent(gfx);
+                    drawFlag = false;
                 }
             }
         }

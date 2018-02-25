@@ -17,17 +17,20 @@ namespace Chip8
         public MainForm()
         {
             InitializeComponent();
-           // em.DrawGraphicsEvent += UpdateDraw;
+            button1_Click(null, null);
+            em.DrawGraphicsEvent += UpdateDraw;
+
         }
 
-        private void UpdateDraw(sbyte[] pixels)
+        private void UpdateDraw(byte[] pixels)
         {
             Bitmap flag = new Bitmap(64, 32);
             Graphics flagGraphics = Graphics.FromImage(flag);
 
             for(int i = 0; i < pixels.Length; i++)
             {
-                flagGraphics.FillRectangle(Brushes.Black, (int) Math.Floor(i / 64d), i % 32, 1, 1);
+                Brush color = pixels[i] == 0 ? Brushes.Black : Brushes.White;
+                flagGraphics.FillRectangle(color, (int) Math.Floor(i / 64d), i % 32, 1, 1);
             }
             pictureBox1.Image = flag;
         }
