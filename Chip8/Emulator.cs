@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Chip8
 {
     class Emulator
     {
+        private readonly Stopwatch stopWatch = Stopwatch.StartNew();
         private ushort opcode;
         private byte[] memory = new byte[4096];
         private byte[] registers = new byte[16];
@@ -30,28 +33,28 @@ namespace Chip8
         public delegate void DrawGraphics(byte[] gfx);
         public event DrawGraphics DrawGraphicsEvent;
 
-        public bool Stop = false;
+        public volatile bool Stop = false;
 
-        public void SetKeys(char key)
+        public void SetKeys(char key, byte val)
         {
             switch(key)
             {
-                case '1': keyArr[0] = 0x1; break;
-                case '2': keyArr[0] = 0x1; break;
-                case '3': keyArr[0] = 0x1; break;
-                case '4': keyArr[0] = 0x1; break;
-                case 'Q': keyArr[0] = 0x1; break;
-                case 'W': keyArr[0] = 0x1; break;
-                case 'E': keyArr[0] = 0x1; break;
-                case 'R': keyArr[0] = 0x1; break;
-                case 'A': keyArr[0] = 0x1; break;
-                case 'S': keyArr[0] = 0x1; break;
-                case 'D': keyArr[0] = 0x1; break;
-                case 'F': keyArr[0] = 0x1; break;
-                case 'Z': keyArr[0] = 0x1; break;
-                case 'X': keyArr[0] = 0x1; break;
-                case 'C': keyArr[0] = 0x1; break;
-                case 'V': keyArr[0] = 0x1; break;
+                case '1': keyArr[0x0] = val; break;
+                case '2': keyArr[0x1] = val; break;
+                case '3': keyArr[0x2] = val; break;
+                case '4': keyArr[0x3] = val; break;
+                case 'Q': keyArr[0x4] = val; break;
+                case 'W': keyArr[0x5] = val; break;
+                case 'E': keyArr[0x6] = val; break;
+                case 'R': keyArr[0x7] = val; break;
+                case 'A': keyArr[0x8] = val; break;
+                case 'S': keyArr[0x9] = val; break;
+                case 'D': keyArr[0xa] = val; break;
+                case 'F': keyArr[0xb] = val; break;
+                case 'Z': keyArr[0xc] = val; break;
+                case 'X': keyArr[0xd] = val; break;
+                case 'C': keyArr[0xe] = val; break;
+                case 'V': keyArr[0xf] = val; break;
             }
         }
 
@@ -102,7 +105,7 @@ namespace Chip8
                     }
                     break;
                 case 0x1000:
-                    pc = (byte) (opcode & 0x0FFF);
+                    pc = (ushort) (opcode & 0x0FFF);
                     break;
                 case 0x2000:
                     stack[sp] = pc;
@@ -111,6 +114,12 @@ namespace Chip8
                     break;
                 case 0x3000:
                     if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))
+                        pc += 4;
+                    else
+                        pc += 2;
+                    break;
+                case 0x4000:
+                    if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF))
                         pc += 4;
                     else
                         pc += 2;
@@ -131,12 +140,24 @@ namespace Chip8
                                 V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
                                 pc += 2;
                                 break;
+                            case 0x0002:
+                                V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+                                pc += 2;
+                                break;
                             case 0x0004:
                                 if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))
                                     V[0xF] = 1; //carry
                                 else
                                     V[0xF] = 0;
                                 V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
+                                pc += 2;
+                                break;
+                            case 0x0005:
+                                if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8])
+                                    V[0xF] = 0; //carry
+                                else
+                                    V[0xF] = 1;
+                                V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
                                 pc += 2;
                                 break;
                             default:
@@ -147,6 +168,10 @@ namespace Chip8
                     }
                 case 0xA000:
                     I = (ushort)(opcode & 0x0FFF);
+                    pc += 2;
+                    break;
+                case 0xC000:
+                    V[(opcode & 0x0F00) >> 8] = (byte) ((new Random().Next(0, 256)) & (byte) (opcode & 0x00FF));
                     pc += 2;
                     break;
                 case 0xD000:
@@ -186,6 +211,15 @@ namespace Chip8
                             else
                                 pc += 2;
                             break;
+                        case 0x00A1:
+                            if (keyArr[V[(opcode & 0x0F00) >> 8]] == 0)
+                                pc += 4;
+                            else
+                                pc += 2;
+                            break;
+                        default:
+                            Console.WriteLine("Unknown opcode: {0:x}\n", opcode);
+                            break;
                     }
                     break;
                 case 0xF000:
@@ -197,6 +231,10 @@ namespace Chip8
                             break;
                         case 0x0015:
                             delay_timer = V[(opcode & 0x0F00) >> 8];
+                            pc += 2;
+                            break;
+                        case 0x0018:
+                            sound_timer = V[(opcode & 0x0F00) >> 8];
                             pc += 2;
                             break;
                         case 0x0033:
@@ -229,20 +267,25 @@ namespace Chip8
 
             // Update timers
             if (delay_timer > 0)
+            {
                 --delay_timer;
+                Thread.Sleep(1 / 60);
+            }
 
             if (sound_timer > 0)
             {
-                if (sound_timer == 1)
-                    Console.WriteLine("BEEP!\n"); //TODO
-                --sound_timer;
+                Console.Beep(500, (1000 / 60) * sound_timer);
+                sound_timer = 0;
             }
         }
 
         public void Run()
         {
+            TimeSpan timePerFrame = new TimeSpan(TimeSpan.TicksPerSecond / 540); // CHIP8 runs at 540 HZ
             while(!Stop)
             {
+                var startTime = stopWatch.Elapsed;
+              
                 EmulateCycle();
 
                 if(drawFlag)
@@ -250,7 +293,14 @@ namespace Chip8
                     DrawGraphicsEvent(gfx);
                     drawFlag = false;
                 }
+
+                var elapsedTime = stopWatch.Elapsed - startTime;
+                if(elapsedTime < timePerFrame)
+                {
+                    Thread.Sleep(timePerFrame - elapsedTime);
+                }
             }
+            Console.WriteLine("Shutting down");
         }
 
     }

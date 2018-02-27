@@ -8,78 +8,110 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Drawing.Imaging;
+using System.Threading;
 
 namespace Chip8
 {
     public partial class MainForm : Form
     {
         private Emulator em = new Emulator();
+        private Bitmap bitmap;
+
         public MainForm()
         {
             InitializeComponent();
-            button1_Click(null, null);
+            bitmap = new Bitmap(64, 32);
+            this.pictureBoxWithInterpolationMode1.Image = bitmap;
             em.DrawGraphicsEvent += UpdateDraw;
-
         }
 
         private void UpdateDraw(byte[] pixels)
         {
-            Bitmap flag = new Bitmap(64, 32);
-            Graphics flagGraphics = Graphics.FromImage(flag);
+            var bits = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
-            for(int i = 0; i < pixels.Length; i++)
+            unsafe
             {
-                Brush color = pixels[i] == 0 ? Brushes.Black : Brushes.White;
-                flagGraphics.FillRectangle(color, (int) Math.Floor(i / 64d), i % 32, 1, 1);
+                byte* pointer = (byte*)bits.Scan0;
+                for (var i = 0; i < pixels.Length; i++)
+                {
+                    pointer[0] = 0; // Blue
+                    pointer[1] = pixels[i] == 0x1 ? (byte)0x64 : (byte)0; // Green
+                    pointer[2] = 0; // Red
+                    pointer[3] = 255; // Alpha
+                    
+                    pointer += 4; // 4 bytes per pixel
+                }
             }
-            pictureBox1.Image = flag;
+
+            bitmap.UnlockBits(bits);
+
+            try
+            {
+                this.Invoke((Action)this.RedrawPanel);
+            }
+            catch(ObjectDisposedException e)
+            {
+
+            }
         }
 
-        public void CreateBitmapAtRuntime()
+        void RedrawPanel()
         {
-            pictureBox1.Size = new Size(64, 32);
-            this.Controls.Add(pictureBox1);
-
-            Bitmap flag = new Bitmap(64, 32);
-            Graphics flagGraphics = Graphics.FromImage(flag);
-            int red = 0;
-            int white = 11;
-            while (white <= 100)
-            {
-                flagGraphics.FillRectangle(Brushes.Red, 0, red, 200, 10);
-                flagGraphics.FillRectangle(Brushes.White, 0, white, 200, 10);
-                red += 20;
-                white += 20;
-            }
-            pictureBox1.Image = flag;
-
+            this.pictureBoxWithInterpolationMode1.Refresh();
         }
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
-
+            char x = (char) e.KeyData;
+            em.SetKeys(x, 1);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void MainForm_KeyUp(object sender, KeyEventArgs e)
         {
-            try
+            char x = (char)e.KeyData;
+            em.SetKeys(x, 0);
+        }
+
+        Task t;
+        private void buttonLoad_Click(object sender, EventArgs e)
+        {
+            openFileDialog.FileName = "";
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                em.LoadGame(File.ReadAllBytes("../../roms/pong.rom"));
-                em.Initialize();
-                System.Threading.Thread gameThread =
-                    new System.Threading.Thread(new System.Threading.ThreadStart(em.Run));
-                gameThread.Start();
-            }
-            catch (FileNotFoundException ex)
-            {
-                MessageBox.Show(ex.Message, "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                em.LoadGame(File.ReadAllBytes(openFileDialog.FileName));
+
+                try
+                {
+                    em.Initialize();
+                    t = Task.Factory.StartNew(
+                    () => {
+                        em.Run();
+                    }
+                    );
+                }
+                catch (FileNotFoundException ex)
+                {
+                    MessageBox.Show(ex.Message, "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             em.Stop = true;
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonPause_Click(object sender, EventArgs e)
+        {
+            em.Stop = true;
+            this.t.Wait();
         }
     }
 }

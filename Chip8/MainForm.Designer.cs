@@ -28,49 +28,72 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.button1 = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.buttonPause = new System.Windows.Forms.Button();
+            this.pictureBoxWithInterpolationMode1 = new DanTup.DaChip8.PictureBoxWithInterpolationMode();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWithInterpolationMode1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(52, 50);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(311, 228);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(104, 478);
+            this.button1.Location = new System.Drawing.Point(154, 916);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(228, 70);
             this.button1.TabIndex = 1;
-            this.button1.Text = "button1";
+            this.button1.Text = "Load ROM";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.buttonLoad_Click);
+            // 
+            // buttonPause
+            // 
+            this.buttonPause.Location = new System.Drawing.Point(481, 916);
+            this.buttonPause.Name = "buttonPause";
+            this.buttonPause.Size = new System.Drawing.Size(216, 70);
+            this.buttonPause.TabIndex = 3;
+            this.buttonPause.Text = "Pause";
+            this.buttonPause.UseVisualStyleBackColor = true;
+            this.buttonPause.Click += new System.EventHandler(this.buttonPause_Click);
+            // 
+            // pictureBoxWithInterpolationMode1
+            // 
+            this.pictureBoxWithInterpolationMode1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            this.pictureBoxWithInterpolationMode1.Location = new System.Drawing.Point(40, 46);
+            this.pictureBoxWithInterpolationMode1.Name = "pictureBoxWithInterpolationMode1";
+            this.pictureBoxWithInterpolationMode1.Size = new System.Drawing.Size(1707, 763);
+            this.pictureBoxWithInterpolationMode1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBoxWithInterpolationMode1.TabIndex = 4;
+            this.pictureBoxWithInterpolationMode1.TabStop = false;
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.FileName = "openFileDialog";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(857, 750);
+            this.ClientSize = new System.Drawing.Size(1797, 1227);
+            this.Controls.Add(this.pictureBoxWithInterpolationMode1);
+            this.Controls.Add(this.buttonPause);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.pictureBox1);
+            this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Chip8";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWithInterpolationMode1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonPause;
+        private DanTup.DaChip8.PictureBoxWithInterpolationMode pictureBoxWithInterpolationMode1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
     }
 }
 
