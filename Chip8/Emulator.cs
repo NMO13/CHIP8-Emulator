@@ -10,8 +10,8 @@ namespace Chip8
 {
     class Emulator
     {
-        private static readonly int WIDTH = 64;
-        private static readonly int HEIGHT = 32;
+        private static readonly byte WIDTH = 64;
+        private static readonly byte HEIGHT = 32;
 
         private readonly Stopwatch stopWatch = Stopwatch.StartNew();
         private ushort opcode;
@@ -188,22 +188,27 @@ namespace Chip8
                     break;
                 case 0xD000:
                     {
-                        ushort x = (ushort) (V[(opcode & 0x0F00) >> 8]);
-                        ushort y = (ushort) (V[(opcode & 0x00F0) >> 4]);
-                        ushort height = (ushort) (opcode & 0x000F);
-                        ushort pixel;
+                        byte x = (byte) (V[(opcode & 0x0F00) >> 8]);
+                        byte y = (byte) (V[(opcode & 0x00F0) >> 4]);
+                        byte height = (byte) (opcode & 0x000F);
+                        byte pixel;
 
                         V[0xF] = 0;
-                        for (int yline = 0; yline < height; yline++)
+                        for (byte yline = 0; yline < height; yline++)
                         {
                             pixel = memory[I + yline];
-                            for (int xline = 0; xline < 8; xline++)
+                            for (byte xline = 0; xline < 8; xline++)
                             {
                                 if ((pixel & (0x80 >> xline)) != 0) // if sprite pixel is set
                                 {
-                                    if (gfx[(x + xline + ((y + yline) * 64))] == 1) // if pixel value changes from set to unset
+                                    byte posX = (byte) ((x + xline) % WIDTH);
+                                    byte posY = (byte)((y + yline) % HEIGHT);
+
+                                    ushort posPixel = (ushort) (posX + ((posY) * 64));
+
+                                    if (gfx[posPixel] == 1) // if pixel value changes from set to unset
                                         V[0xF] = 1; // set vf register
-                                    gfx[x + xline + ((y + yline) * 64)] ^= 1;
+                                    gfx[posPixel] ^= 1;
                                 }
                             }
                         }
