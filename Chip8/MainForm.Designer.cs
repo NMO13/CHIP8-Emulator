@@ -30,14 +30,15 @@
         {
             this.button1 = new System.Windows.Forms.Button();
             this.buttonPause = new System.Windows.Forms.Button();
-            this.pictureBoxWithInterpolationMode1 = new DanTup.DaChip8.PictureBoxWithInterpolationMode();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.pictureBoxWithInterpolationMode1 = new DanTup.DaChip8.PictureBoxWithInterpolationMode();
+            this.buttonStop = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWithInterpolationMode1)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(154, 916);
+            this.button1.Location = new System.Drawing.Point(1816, 46);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(228, 70);
             this.button1.TabIndex = 1;
@@ -47,13 +48,17 @@
             // 
             // buttonPause
             // 
-            this.buttonPause.Location = new System.Drawing.Point(481, 916);
+            this.buttonPause.Location = new System.Drawing.Point(1816, 165);
             this.buttonPause.Name = "buttonPause";
-            this.buttonPause.Size = new System.Drawing.Size(216, 70);
+            this.buttonPause.Size = new System.Drawing.Size(228, 70);
             this.buttonPause.TabIndex = 3;
             this.buttonPause.Text = "Pause";
             this.buttonPause.UseVisualStyleBackColor = true;
             this.buttonPause.Click += new System.EventHandler(this.buttonPause_Click);
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.FileName = "openFileDialog";
             // 
             // pictureBoxWithInterpolationMode1
             // 
@@ -65,15 +70,22 @@
             this.pictureBoxWithInterpolationMode1.TabIndex = 4;
             this.pictureBoxWithInterpolationMode1.TabStop = false;
             // 
-            // openFileDialog
+            // buttonStop
             // 
-            this.openFileDialog.FileName = "openFileDialog";
+            this.buttonStop.Location = new System.Drawing.Point(1816, 283);
+            this.buttonStop.Name = "buttonStop";
+            this.buttonStop.Size = new System.Drawing.Size(228, 70);
+            this.buttonStop.TabIndex = 5;
+            this.buttonStop.Text = "Stop";
+            this.buttonStop.UseVisualStyleBackColor = true;
+            this.buttonStop.Click += new System.EventHandler(this.buttonStop_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1797, 1227);
+            this.ClientSize = new System.Drawing.Size(2109, 1227);
+            this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.pictureBoxWithInterpolationMode1);
             this.Controls.Add(this.buttonPause);
             this.Controls.Add(this.button1);
@@ -94,6 +106,7 @@
         private System.Windows.Forms.Button buttonPause;
         private DanTup.DaChip8.PictureBoxWithInterpolationMode pictureBoxWithInterpolationMode1;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.Button buttonStop;
     }
 }
 

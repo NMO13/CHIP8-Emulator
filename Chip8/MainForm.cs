@@ -79,11 +79,10 @@ namespace Chip8
             openFileDialog.FileName = "";
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                em.LoadGame(File.ReadAllBytes(openFileDialog.FileName));
-
                 try
                 {
                     em.Initialize();
+                    em.LoadGame(File.ReadAllBytes(openFileDialog.FileName));
                     t = Task.Factory.StartNew(
                     () => {
                         em.Run();
@@ -110,8 +109,21 @@ namespace Chip8
 
         private void buttonPause_Click(object sender, EventArgs e)
         {
+            if (!em.Stop && em.Pause)
+            {
+                ((Button)sender).Text = "Pause";
+                em.Pause = false;
+            }
+            else if (!em.Stop && !em.Pause)
+            {
+                ((Button)sender).Text = "Continue";
+                em.Pause = true;
+            }
+        }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
             em.Stop = true;
-            this.t.Wait();
         }
     }
 }

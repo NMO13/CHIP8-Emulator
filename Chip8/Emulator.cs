@@ -10,20 +10,23 @@ namespace Chip8
 {
     class Emulator
     {
+        private static readonly int WIDTH = 64;
+        private static readonly int HEIGHT = 32;
+
         private readonly Stopwatch stopWatch = Stopwatch.StartNew();
         private ushort opcode;
-        private byte[] memory = new byte[4096];
-        private byte[] registers = new byte[16];
+        private byte[] memory;
+        private byte[] registers;
+        private byte[] V;
+        private ushort[] stack;
 
         private ushort pc;
         private ushort I;
-        private byte[] V = new byte[16];
 
-        private byte[] gfx = new byte[64 * 32];
+        private byte[] gfx = new byte[WIDTH * HEIGHT];
         private byte delay_timer;
         private byte sound_timer;
 
-        private ushort[] stack = new ushort[16];
         private ushort sp;
 
         private bool drawFlag;
@@ -34,6 +37,7 @@ namespace Chip8
         public event DrawGraphics DrawGraphicsEvent;
 
         public volatile bool Stop = false;
+        public volatile bool Pause = false;
 
         public void SetKeys(char key, byte val)
         {
@@ -60,6 +64,14 @@ namespace Chip8
 
         public void Initialize()
         {
+            Pause = false;
+            Stop = false;
+
+            memory = new byte[4096];
+            registers = new byte[16];
+            V = new byte[16];
+            stack = new ushort[16];
+
             pc = 0x200;
             opcode = 0;
             I = 0;
@@ -284,6 +296,7 @@ namespace Chip8
             TimeSpan timePerFrame = new TimeSpan(TimeSpan.TicksPerSecond / 540); // CHIP8 runs at 540 HZ
             while(!Stop)
             {
+                while(Pause) { DrawGraphicsEvent(gfx); }
                 var startTime = stopWatch.Elapsed;
               
                 EmulateCycle();
@@ -300,7 +313,10 @@ namespace Chip8
                     Thread.Sleep(timePerFrame - elapsedTime);
                 }
             }
+
             Console.WriteLine("Shutting down");
+            gfx = new byte[WIDTH * HEIGHT];
+            DrawGraphicsEvent(gfx);
         }
 
     }
