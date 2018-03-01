@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonLoadRom = new System.Windows.Forms.Button();
             this.buttonPause = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBoxWithInterpolationMode1 = new DanTup.DaChip8.PictureBoxWithInterpolationMode();
@@ -38,13 +38,13 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(1816, 46);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(228, 70);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Load ROM";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.buttonLoad_Click);
+            this.buttonLoadRom.Location = new System.Drawing.Point(1816, 46);
+            this.buttonLoadRom.Name = "button1";
+            this.buttonLoadRom.Size = new System.Drawing.Size(228, 70);
+            this.buttonLoadRom.TabIndex = 1;
+            this.buttonLoadRom.Text = "Load ROM";
+            this.buttonLoadRom.UseVisualStyleBackColor = true;
+            this.buttonLoadRom.Click += new System.EventHandler(this.buttonLoad_Click);
             // 
             // buttonPause
             // 
@@ -88,7 +88,7 @@
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.pictureBoxWithInterpolationMode1);
             this.Controls.Add(this.buttonPause);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonLoadRom);
             this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Chip8";
@@ -102,7 +102,7 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonLoadRom;
         private System.Windows.Forms.Button buttonPause;
         private DanTup.DaChip8.PictureBoxWithInterpolationMode pictureBoxWithInterpolationMode1;
         private System.Windows.Forms.OpenFileDialog openFileDialog;

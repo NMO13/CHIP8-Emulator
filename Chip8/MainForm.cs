@@ -81,6 +81,7 @@ namespace Chip8
             {
                 try
                 {
+                    buttonLoadRom.Enabled = false;
                     em.Initialize();
                     em.LoadGame(File.ReadAllBytes(openFileDialog.FileName));
                     t = Task.Factory.StartNew(
@@ -124,6 +125,7 @@ namespace Chip8
         private void buttonStop_Click(object sender, EventArgs e)
         {
             em.Stop = true;
+            buttonLoadRom.Enabled = true;
         }
     }
 }
