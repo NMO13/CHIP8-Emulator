@@ -136,6 +136,16 @@ namespace Chip8
                     else
                         pc += 2;
                     break;
+                case 0x5000:
+                    if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4])
+                    {
+                        pc += 4;
+                    }
+                    else
+                    {
+                        pc += 2;
+                    }
+                    break;
                 case 0x6000:
                     V[(opcode & 0x0F00) >> 8] = (byte) (opcode & 0x00FF);
                     pc += 2;
@@ -152,8 +162,16 @@ namespace Chip8
                                 V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
                                 pc += 2;
                                 break;
+                            case 0x0001:
+                                V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+                                pc += 2;
+                                break;
                             case 0x0002:
                                 V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+                                pc += 2;
+                                break;
+                            case 0x0003:
+                                V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
                                 pc += 2;
                                 break;
                             case 0x0004:
@@ -172,14 +190,48 @@ namespace Chip8
                                 V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
                                 pc += 2;
                                 break;
+                            case 0x0006:
+                                V[0xF] = (byte) (V[(opcode & 0x0F00) >> 8] & 0x01);
+                                V[(opcode & 0x0F00) >> 8] >>= 1;
+                                V[(opcode & 0x00F0) >> 4] = V[(opcode & 0x0F00) >> 8];
+                                pc += 2;
+                                break;
+                            case 0x0007:
+                                if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4])
+                                    V[0xF] = 0; //carry
+                                else
+                                    V[0xF] = 1;
+                                V[(opcode & 0x0F00) >> 8] = (byte) (V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8]);
+                                pc += 2;
+                                break;
+                            case 0x000E:
+                                V[0xF] = (byte)(V[(opcode & 0x0F00) >> 8] & 0x80);
+                                V[(opcode & 0x0F00) >> 8] <<= 1;
+                                V[(opcode & 0x00F0) >> 4] = V[(opcode & 0x0F00) >> 8];
+                                pc += 2;
+                                break;
                             default:
                                 Console.WriteLine("Unknown opcode [0x0000]: {0:x}\n", opcode);
                                 break;
                         }
                         break;
                     }
+                case 0x9000:
+                    if(V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4])
+                    {
+                        pc += 4;
+                    }
+                    else
+                    {
+                        pc += 2;
+                    }
+                    break;
                 case 0xA000:
                     I = (ushort)(opcode & 0x0FFF);
+                    pc += 2;
+                    break;
+                case 0xB000:
+                    pc = (ushort) (V[0] + (opcode & 0x0FFF));
                     pc += 2;
                     break;
                 case 0xC000:
@@ -246,12 +298,34 @@ namespace Chip8
                             V[(opcode & 0x0F00) >> 8] = delay_timer;
                             pc += 2;
                             break;
+                        case 0x000A:
+                            bool keyPress = false;
+
+                            for (byte i = 0; i < 16; ++i)
+                            {
+                                if (keyArr[i] != 0)
+                                {
+                                    V[(opcode & 0x0F00) >> 8] = i;
+                                    keyPress = true;
+                                }
+                            }
+
+                            // If we didn't received a keypress, skip this cycle and try again.
+                            if (!keyPress)
+                                return;
+
+                            pc += 2;
+                            break;
                         case 0x0015:
                             delay_timer = V[(opcode & 0x0F00) >> 8];
                             pc += 2;
                             break;
                         case 0x0018:
                             sound_timer = V[(opcode & 0x0F00) >> 8];
+                            pc += 2;
+                            break;
+                        case 0x001E:
+                            I += V[(opcode & 0x0F00) >> 8];
                             pc += 2;
                             break;
                         case 0x0033:
@@ -264,8 +338,16 @@ namespace Chip8
                             I = (byte) (V[(opcode & 0x0F00) >> 8] * 0x5);
                             pc += 2;
                             break;
-                        case 0x0065:
+                        case 0x0055:
                             byte length = (byte)((opcode & 0x0F00) >> 8);
+                            for(byte i = 0; i <= length; i++)
+                            {
+                                memory[I++] = V[i];
+                            }
+                            pc += 2;
+                            break;
+                        case 0x0065:
+                            length = (byte)((opcode & 0x0F00) >> 8);
                             for(byte i = 0; i <= length; i++)
                             {
                                 V[i] = memory[I++];
